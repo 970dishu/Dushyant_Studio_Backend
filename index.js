@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
+import { rateLimit } from 'express-rate-limit';
+
 
 dotenv.config();
 
@@ -9,8 +11,22 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: 'https://www.dushyant.studio',
+    methods: ['GET', 'POST'],
+  })
+);
 app.use(express.json());
+
+const contactRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: {
+    success: false,
+    error: 'Too many contact requests from this IP. Please try again after 15 minutes.',
+  },
+});
 
 // Email configuration
 const transporter = nodemailer.createTransport({
@@ -38,7 +54,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Contact form endpoint
-app.post('/api/contact', async (req, res) => {
+app.post('/api/contact', contactRateLimiter, async (req, res) => {
   try {
     const { name, email, service, message } = req.body;
 
