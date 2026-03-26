@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(
   cors({
-    origin: 'https://www.dushyant.studio',
+    origin: ['https://www.dushyant.studio', 'https://dushyant.studio'],
     methods: ['GET', 'POST'],
   })
 );
